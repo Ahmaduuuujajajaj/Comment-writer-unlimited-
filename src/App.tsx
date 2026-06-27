@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, MessageSquare, Loader2, Video, CheckCircle2, AlertCircle } from 'lucide-react';
+import { UploadCloud, MessageSquare, Loader2, Video, CheckCircle2, AlertCircle, Copy, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function App() {
@@ -8,7 +8,15 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [comments, setComments] = useState<string[]>([]);
+  const [copiedAll, setCopiedAll] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCopyAll = async () => {
+    const text = comments.join('\n');
+    await navigator.clipboard.writeText(text);
+    setCopiedAll(true);
+    setTimeout(() => setCopiedAll(false), 2000);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -45,7 +53,7 @@ export default function App() {
     formData.append('count', count.toString());
 
     try {
-      const response = await fetch('/api/generate-comments', {
+      const response = await fetch('/api/generate', {
         method: 'POST',
         body: formData,
       });
@@ -194,9 +202,18 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6 pt-4"
             >
-              <div className="flex items-center space-x-2">
-                <CheckCircle2 className="w-6 h-6 text-green-500" />
-                <h2 className="text-2xl font-bold tracking-tight">Generated Comments</h2>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle2 className="w-6 h-6 text-green-500" />
+                  <h2 className="text-2xl font-bold tracking-tight">Generated Comments</h2>
+                </div>
+                <button
+                  onClick={handleCopyAll}
+                  className="flex items-center space-x-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-sm font-medium transition-colors"
+                >
+                  {copiedAll ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                  <span className={copiedAll ? 'text-green-700' : ''}>{copiedAll ? 'Copied!' : 'Copy All'}</span>
+                </button>
               </div>
               
               <div className="grid gap-4">
